@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WME Wazer Creater
 // @namespace    https://greasyfork.org/users/783417
-// @version      2021.06.14.03
+// @version      2021.06.14.04
 // @description  Creates Wazer Comments
 // @author       njs923
 // @include      https://www.waze.com/editor*
@@ -47,59 +47,67 @@
         console.log("WME Wazer Creater " + GM_info.script.version);
     }
 
-    function addButtons()
-    {
+    function addButtons(){
         if (WazeWrap.hasMapCommentSelected())
         {
             let mapComment = WazeWrap.getSelectedFeatures()[0];
-            if (mapComment.model.attributes.id < 0)
+            const lockRegion = $('.lock-edit-region');
+
+            const regionDiv = $('<div class="wazer-creater-region"/>');
+            const mainDiv = $('<div class="form-group"/>');
+            mainDiv.append($('<label class="wazer-creater-label control-label">Wazer Creater (center unset)</label>'));
+            const controlsDiv = $('<div class="controls"/>');
+            controlsDiv.append($('<div><button id="wazerCreatorSetCenter" class="waze-btn wazerCreatorSetCenterButton" type="button">Set Center for Wazer</button></div>'));
+            controlsDiv.append($('<div><button id="wazerCreatorCreateBody" class="waze-btn wazerCreatorCreateBodyButton" type="button">Create Wazer body</button></div>'));
+            controlsDiv.append($('<div><button id="wazerCreatorCreateLEye" class="waze-btn wazerCreatorCreateLEyeButton" type="button">Create left Wazer eye</button></div>'));
+            controlsDiv.append($('<div><button id="wazerCreatorCreateREye" class="waze-btn wazerCreatorCreateREyeButton" type="button">Create right Wazer eye</button></div>'));
+            controlsDiv.append($('<div><button id="wazerCreatorCreateSmile" class="waze-btn wazerCreatorCreateSmileButton" type="button">Create Wazer smile</button></div>'));
+
+            mainDiv.append(controlsDiv);
+            regionDiv.append(mainDiv);
+            lockRegion.before(regionDiv);
+
+            if (center)
             {
-                const newCommentForm = $('.new-comment-form');
-                console.log(newCommentForm);
-
-                const $container = $('<div>', { id: 'csRoadTypeButtonsContainer', class: 'rth-btn-container' });
-                $container.append($('<div><button id="wazerCreatorSetCenter" class="wazerCreatorSetCenterButton" type="button">Set Center for Wazer</button></div>'));
-                $container.append($('<div id="wazerCreatorCenterDiv" class="wazerCreatorCenterDiv">Center: Unset</div>'));
-                $container.append($('<div><button id="wazerCreatorCreateBody" class="wazerCreatorCreateBodyButton" type="button">Create Wazer body</button></div>'));
-                $container.append($('<div><button id="wazerCreatorCreateLEye" class="wazerCreatorCreateLEyeButton" type="button">Create left Wazer eye</button></div>'));
-                $container.append($('<div><button id="wazerCreatorCreateREye" class="wazerCreatorCreateREyeButton" type="button">Create right Wazer eye</button></div>'));
-                $container.append($('<div><button id="wazerCreatorCreateSmile" class="wazerCreatorCreateSmileButton" type="button">Create Wazer smile</button></div>'));
-
-                newCommentForm.before($container);
-
-                if (center)
-                {
-                    $('.wazerCreatorCenterDiv').text(`Center: ${center.x}, ${center.y}`);
-                }
-                else
-                {
-                    $('.wazerCreatorCreateBodyButton').attr("disabled");
-                    $('.wazerCreatorCreateLEyeButton').attr("disabled");
-                    $('.wazerCreatorCreateREyeButton').attr("disabled");
-                    $('.wazerCreatorCreateSmileButton').attr("disabled");
-                }
-
-                $('.wazerCreatorSetCenterButton').on('click', setCenter);
-                $('.wazerCreatorCreateBodyButton').on('click', createWazerBody);
-                $('.wazerCreatorCreateLEyeButton').on('click', createWazerLEye);
-                $('.wazerCreatorCreateREyeButton').on('click', createWazerREye);
-                $('.wazerCreatorCreateSmileButton').on('click', createWazerSmile);
+                $('.wazer-creater-label').text('Wazer Creater');
+                setButtons(true);
             }
+            else
+            {
+                setButtons(false);
+            }
+
+            $('.wazerCreatorSetCenterButton').on('click', setCenter);
+            $('.wazerCreatorCreateBodyButton').on('click', createWazerBody);
+            $('.wazerCreatorCreateLEyeButton').on('click', createWazerLEye);
+            $('.wazerCreatorCreateREyeButton').on('click', createWazerREye);
+            $('.wazerCreatorCreateSmileButton').on('click', createWazerSmile);
         }
     }
 
-    function setCenter()
-    {
+    function setCenter(){
         if (WazeWrap.hasMapCommentSelected())
         {
             let mapComment = WazeWrap.getSelectedFeatures()[0];
             let model = mapComment.model;
             center = model.geometry.getCentroid();
-            $('.wazerCreatorCenterDiv').text(`Center: ${center.x}, ${center.y}`);
+            $('.wazer-creater-label').text('Wazer Creater');
+            setButtons(true);
+        }
+    }
+
+    function setButtons(enabled){
+        if (enabled){
             $('.wazerCreatorCreateBodyButton').removeAttr("disabled");
             $('.wazerCreatorCreateLEyeButton').removeAttr("disabled");
             $('.wazerCreatorCreateREyeButton').removeAttr("disabled");
             $('.wazerCreatorCreateSmileButton').removeAttr("disabled");
+        }
+        else{
+            $('.wazerCreatorCreateBodyButton').attr("disabled");
+            $('.wazerCreatorCreateLEyeButton').attr("disabled");
+            $('.wazerCreatorCreateREyeButton').attr("disabled");
+            $('.wazerCreatorCreateSmileButton').attr("disabled");
         }
     }
 
@@ -139,7 +147,6 @@
         }
         wktText = wktText.slice(0, -1)
         wktText += '))';
-        console.log(wktText);
         return OpenLayers.Geometry.fromWKT(wktText);
     }
 })();
